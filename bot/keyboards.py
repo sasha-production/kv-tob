@@ -35,7 +35,8 @@ def make_btn(
         cmd: str,  # команда, которую увидит bot_logic
         depth: int = 0,  # текущая «глубина» меню
         color: Color = PRIMARY,  # цвет кнопки (по умолчанию синий)
-        data: Dict[str, Any] | None = None  # доп. данные payload'а
+        data: Dict[str, Any] | None = None,  # доп. данные payload'а
+        is_link_button: bool = False
 ) -> Dict[str, Any]:
     """
     Возвращает dict в формате VK «готовая кнопка».
@@ -44,8 +45,7 @@ def make_btn(
     payload: Dict[str, Any] = {"cmd": cmd, "depth": depth}
     if data:  # если есть доп. данные…
         payload["data"] = data  # …добавляем их
-
-    return {
+    button = {
         "action": {
             "type": "text",  # обычная кнопка-текст
             "label": label,  # подпись
@@ -53,6 +53,13 @@ def make_btn(
         },
         "color": color  # цвет кнопки
     }
+    if is_link_button:  # для ссылки в кнопке
+        button['action']['type'] = "open_link"
+        title, link = label.split('|') # label=f"Cсылка на проект:{proj['link_to_project']}",
+        button['action']['link'] = link
+        button['action']['label'] = title
+        button.pop('color')
+    return button
 
 
 # --------------------------------------------------------------------
@@ -86,7 +93,7 @@ def nav_tail(depth: int) -> List[Dict[str, Any]]:
 
     if depth >= 1:
         buttons.append(
-            make_btn("🔙 Назад", cmd="go_back",
+            make_btn("<- Назад", cmd="go_back",
                      depth=max(depth - 1, 0),  # уменьшаем глубину на 1
                      color=NEGATIVE)
         )
@@ -112,17 +119,17 @@ def kb_main_menu() -> str:
     depth = 0, поэтому навигационных кнопок нет.
     """
     rows: List[List[Dict[str, Any]]] = [
-        [make_btn("📚 Посмотреть проекты",
+        [make_btn("Посмотреть проекты",
                   cmd="menu_find",
                   depth=0,
                   color=PRIMARY)],
 
-        [make_btn("❓ Частые вопросы (FAQ)",
+        [make_btn("❓ Частые вопросы",
                   cmd="menu_faq",
                   depth=0,
                   color=SECONDARY)],
 
-        [make_btn("☎️ Помощь / Контакты",
+        [make_btn("Контактная информация",
                   cmd="menu_help",
                   depth=0,
                   color=SECONDARY)]
@@ -141,14 +148,14 @@ def kb_find_menu(depth: int = 1) -> str:
     Экран, появляющийся после клика «Посмотреть проекты».
     Принимаем depth (по умолчанию 1), чтобы хвост рассчитывался правильно.
     """
-    rows: List[List[Dict[str, Any]]] = [[make_btn("🗂️ Посмотреть все проекты",
+    rows: List[List[Dict[str, Any]]] = [[make_btn("Посмотреть все проекты",
                                                   cmd="find_all_projects",
                                                   depth=depth,
                                                   data={"page": 0})],
-                                        [make_btn("По направлению",
+                                        [make_btn("Фильтрация по направлению",
                                                   cmd="find_by_direction",
                                                   depth=depth)],
-                                        [make_btn("По длительности",
+                                        [make_btn("Фильтрация по длительности",
                                                   cmd="find_by_duration",
                                                   depth=depth)], nav_tail(depth)]
 
@@ -186,10 +193,10 @@ def kb_faq_page(faq_list: List[dict],
     # ← / → навигация
     nav_row: List[Dict[str, Any]] = []
     if page > 0:
-        nav_row.append(make_btn("⬅ Предыдущие проекты", "faq_page", depth,
+        nav_row.append(make_btn("<- Предыдущие вопросы", "faq_page", depth,
                                 color=SECONDARY, data={"page": page - 1}))
     if page < max_page:
-        nav_row.append(make_btn("Следующие проекты ➡", "faq_page", depth,
+        nav_row.append(make_btn("Следующие вопросы ->", "faq_page", depth,
                                 color=SECONDARY, data={"page": page + 1}))
     if nav_row:
         rows.append(nav_row)
@@ -265,14 +272,14 @@ def kb_projects_page(projects: List[Dict[str, Any]],
     if page > 0:
         # передаём те же фильтры + уменьшенный page
         nav_row.append(
-            make_btn("⬅ Предыдущие", "projects_page",
+            make_btn("<- Предыдущие", "projects_page",
                      depth=depth,
                      color=SECONDARY,
                      data={"page": page - 1, **(extra_filter or {})})
         )
     if (page + 1) * page_size < len(projects):
         nav_row.append(
-            make_btn("Следующие ➡", "projects_page",
+            make_btn("Следующие ->", "projects_page",
                      depth=depth,
                      color=SECONDARY,
                      data={"page": page + 1, **(extra_filter or {})})

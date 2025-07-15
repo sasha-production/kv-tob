@@ -11,9 +11,9 @@ from vk_api.bot_longpoll import (         # Модуль LongPoll для соо�
 from vk_api.utils import get_random_id    # Генерация random_id для сообщений
 from vk_api.exceptions import ApiError    # Исключения VK API
 
-from source.config import TOKEN, GROUP_ID        # Токен сообщества и его ID
-from source.bot_logic import generate_keyboard_response      # Бизнес-логика ответа
-from source.bot_data import ERROR_FALLBACK_MESSAGE, BASE_DIR  # Запасной ответ при ошибке
+from bot.config import TOKEN, GROUP_ID        # Токен сообщества и его ID
+from bot.bot_logic import generate_keyboard_response      # Бизнес-логика ответа
+from bot.bot_data import ERROR_FALLBACK_MESSAGE, BASE_DIR  # Запасной ответ при ошибке
 
 # ------------------------------------------------------------------------------
 # Настраиваем логирование: вывод в консоль с датой и уровнем

@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Tuple, Optional, List, Dict, Any
 
-from source.keyboards import (  # готовые фабрики клавиатур
+from bot.keyboards import (  # готовые фабрики клавиатур
     kb_main_menu,
     kb_find_menu,
     kb_faq_page,
@@ -14,10 +14,10 @@ from source.keyboards import (  # готовые фабрики клавиату
     kb_projects_page,
     make_btn,
     SECONDARY,
-    NEGATIVE
+    NEGATIVE, PRIMARY, POSITIVE
 )
 
-from source.bot_data import (
+from bot.bot_data import (
     DEFAULT_FALLBACK_MESSAGE,
     CONTACTS_TEXT,
     BAD_WORDS_WARNING,
@@ -27,7 +27,7 @@ from source.bot_data import (
 
 # 1. Загрузка данных (проекты + FAQ)
 # ---------------------------------------------------------------------
-ROOT = Path(__file__).resolve().parent        # source/
+ROOT = Path(__file__).resolve().parent        # bot/
 DATA_DIR = ROOT.parent / "data"               # …/Data
 
 KB_PATH = DATA_DIR / "project_base.json"
@@ -295,11 +295,11 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
             return "Проект не найден 🤷‍♂️", kb_main_menu()
 
         msg = (
-            f"Проект - {proj['title']}\n\n"
+            f"Проект - {proj['title']}\n"
             f"Направление: {proj['direction']}\n"
             f"Длительность: {proj['duration']}\n\n"
             f"{proj['full_description']}\n\n"
-            f"Ссылка: {proj['link_to_project']}"
+            # f"Ссылка: {proj['link_to_project']}"
         )
 
         # --------- кнопки «Назад» + «Главное меню» -------------
@@ -308,6 +308,16 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
             **({"direction": direction} if direction else {}),
             **({"duration": duration} if duration else {})
         }
+
+        button_project_link = [
+            make_btn(
+                label=f"Cсылка на проект|{proj['link_to_project']}",
+                depth=depth,
+                # color=SECONDARY,
+                cmd=None,
+                is_link_button=True
+            )
+        ]
 
         tail = [
             make_btn(
@@ -325,7 +335,7 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
             )
         ]
 
-        kb = json.dumps({"buttons": [tail], "one_time": False}, ensure_ascii=False)
+        kb = json.dumps({"buttons": [button_project_link, tail], "one_time": False}, ensure_ascii=False)
         return msg, kb
 
     if cmd == "faq_answer":

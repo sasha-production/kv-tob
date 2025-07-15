@@ -37,7 +37,7 @@ DEFAULT_FALLBACK_MESSAGE = ("Не могу понять что ты имеешь
 ERROR_FALLBACK_MESSAGE = "Ой, что-то пошло не так на моей стороне. Попробуй написать 'Начать' или 'Старт' "
 
 CONTACTS_TEXT = (
-    "Контакты и ссылки:\n"
+    "Контактная информация:\n"
     "• Пишите, если есть вопросы info@education.vk.company\n"
     "• Сайт VK Education Projects:\n https://education.vk.company/education_projects/\n"
 

@@ -4,7 +4,7 @@ import json
 import logging
 import re  # Работа с регулярными выражениями (для "чистки" текста от HTML-мусора)
 import html
-from source.config import API_URL_TEMPLATE
+from bot.config import API_URL_TEMPLATE
 from pathlib import Path
 
 logging.basicConfig(
