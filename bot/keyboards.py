@@ -102,7 +102,7 @@ def nav_tail(depth: int) -> List[Dict[str, Any]]:
         buttons.append(
             make_btn("🏠 Главное меню", cmd="go_home",
                      depth=0,  # прыжок в корень
-                     color=SECONDARY)
+                     color=POSITIVE)
         )
 
     return buttons  # может быть пустой список

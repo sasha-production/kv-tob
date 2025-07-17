@@ -142,7 +142,7 @@ def generate_keyboard_response(
     # 1. Приветственные триггеры
     # --------------------------------------------------------------
     greet_triggers = {"привет", "здравствуй", "начать", "/start", "hi", "yfxfnm", "старт", "ghbdtn"}
-    if normalize(text) in greet_triggers or text:
+    if normalize(text) in greet_triggers:
         return WELCOME_MESSAGE_AFTER_START, kb_main_menu()
 
     # --------------------------------------------------------------
@@ -298,7 +298,7 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
             return "Проект не найден", kb_main_menu()
 
         msg = (
-            f"<b>Проект</b> - {proj['title']}\n"
+            f"Проект - {proj['title']}\n"
             f"Направление: {proj['direction']}\n"
             f"Длительность: {proj['duration']}\n\n"
             f"{proj['full_description']}\n\n"
