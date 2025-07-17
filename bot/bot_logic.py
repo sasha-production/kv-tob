@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Tuple, Optional, List, Dict, Any
 
-from bot.keyboards import (  # готовые фабрики клавиатур
+from bot.keyboards import (
     kb_main_menu,
     kb_find_menu,
     kb_faq_page,
@@ -13,8 +13,11 @@ from bot.keyboards import (  # готовые фабрики клавиатур
     kb_durations_menu,
     kb_projects_page,
     make_btn,
+    kb_ask_page,
     SECONDARY,
-    NEGATIVE, PRIMARY, POSITIVE
+    NEGATIVE,
+    PRIMARY,
+    POSITIVE
 )
 
 from bot.bot_data import (
@@ -27,8 +30,8 @@ from bot.bot_data import (
 
 # 1. Загрузка данных (проекты + FAQ)
 # ---------------------------------------------------------------------
-ROOT = Path(__file__).resolve().parent        # bot/
-DATA_DIR = ROOT.parent / "data"               # …/Data
+ROOT = Path(__file__).resolve().parent  # bot/
+DATA_DIR = ROOT.parent / "data"  # …/Data
 
 KB_PATH = DATA_DIR / "project_base.json"
 FAQ_PATH = DATA_DIR / "faq.json"
@@ -84,10 +87,7 @@ def list_projects_short(items: List[Dict[str, Any]], page: int) -> str:
     if not page_items:
         return "По этому фильтру пока ничего не нашлось."
     start_idx = page * PAGE_SIZE + 1
-    lines = [
-        f"{idx}. {p['title']}\n"
-        for idx, p in enumerate(page_items, start=start_idx)
-    ]
+    lines = [f"• {p['title']}" for idx, p in enumerate(page_items, start=start_idx)]
     return "\n".join(lines)
 
 
@@ -223,6 +223,9 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
                                                    if k in {"direction", "duration"}})
 
     # --- уровень 0 → 1 ---
+    if cmd == "menu_ask":
+        return "Напиши свой вопрос. Например, «Возможно ли взять несколько проектов?»", kb_ask_page(depth=1)
+
     if cmd == "menu_find":
         return "Как будем искать проекты?", kb_find_menu(depth=1)
 
@@ -292,14 +295,13 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
         proj = next((p for p in PROJECTS if p["title"] == title), None)
 
         if proj is None:
-            return "Проект не найден 🤷‍♂️", kb_main_menu()
+            return "Проект не найден", kb_main_menu()
 
         msg = (
-            f"Проект - {proj['title']}\n"
+            f"<b>Проект</b> - {proj['title']}\n"
             f"Направление: {proj['direction']}\n"
             f"Длительность: {proj['duration']}\n\n"
             f"{proj['full_description']}\n\n"
-            # f"Ссылка: {proj['link_to_project']}"
         )
 
         # --------- кнопки «Назад» + «Главное меню» -------------
@@ -345,5 +347,4 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
         msg = f"{question}\n\n{answer}"
         return msg, None  # клавиатура остаётся прежней
 
-    # неизвестная команда
     return DEFAULT_FALLBACK_MESSAGE, kb_main_menu()

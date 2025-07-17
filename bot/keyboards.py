@@ -119,6 +119,10 @@ def kb_main_menu() -> str:
     depth = 0, поэтому навигационных кнопок нет.
     """
     rows: List[List[Dict[str, Any]]] = [
+        [make_btn("✍️ Задать вопрос",
+                  cmd="menu_ask",
+                  depth=0,
+                  color=POSITIVE)],
         [make_btn("Посмотреть проекты",
                   cmd="menu_find",
                   depth=0,
@@ -303,6 +307,12 @@ def kb_projects_page(projects: List[Dict[str, Any]],
     rows.append(tail)
     return json.dumps({"buttons": rows, "one_time": False}, ensure_ascii=False)
 
+def kb_ask_page(depth: int = 1) -> str:
+    """
+    Клавиатура появляется если пользователь выбрал Задать вопрос
+    """
+    rows: List[List[Dict[str, Any]]] = [nav_tail(depth)]
+    return make_kb(rows)
 
 # --------------------------------------------------------------------
 # 7. Экспортируем функции, которые понадобятся снаружи
