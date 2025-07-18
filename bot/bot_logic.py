@@ -4,7 +4,9 @@ import json
 import re
 from pathlib import Path
 from typing import Tuple, Optional, List, Dict, Any
-
+from bot.ai_questions import (
+    ask_ai
+)
 from bot.keyboards import (
     kb_main_menu,
     kb_find_menu,
@@ -51,6 +53,7 @@ with FAQ_PATH.open(encoding="utf-8") as f:
 
 FAQ_LIST: List[dict] = _faq_list  # упорядоченный список
 FAQ_BY_ID: Dict[int, str] = {i: item["answer"] for i, item in enumerate(FAQ_LIST)}
+
 
 # ---------------------------------------------------------------------
 # 2. Утилиты
@@ -152,23 +155,21 @@ def generate_keyboard_response(
     if contains_bad_words(text):
         return BAD_WORDS_WARNING, None
 
+    # только текст от пользователя (без payload) -> gigachat
     # --------------------------------------------------------------
-    # 3. FAQ-поиск
-    # --------------------------------------------------------------
-    # faq_ans = match_faq(text)
-    # if faq_ans:
-    #     return faq_ans, None
+    if text and not payload:
+        return ask_ai(question_message=text), None
 
     # --------------------------------------------------------------
     # 4. Простой поиск по проектам по ключевым словам
     # --------------------------------------------------------------
 
-    words = normalize(text).split()
-    if words:
-        hits = [p for p in PROJECTS if any(w in p["title"].lower() for w in words)]
-        if hits:
-            first = hits[0]
-            return format_project_card(first), None
+    # words = normalize(text).split()
+    # if words:
+    #     hits = [p for p in PROJECTS if any(w in p["title"].lower() for w in words)]
+    #     if hits:
+    #         first = hits[0]
+    #         return format_project_card(first), None
 
     # --------------------------------------------------------------
     # 5. Фолбэк
@@ -333,7 +334,7 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
                 "🏠 Главное меню",
                 cmd="go_home",
                 depth=0,
-                color=SECONDARY
+                color=POSITIVE
             )
         ]
 

@@ -1,19 +1,55 @@
 import time
-
+import uuid
 import requests
+from bot.config_logger import logger
+from bot.config import URL_ACCESS_TOKEN, URL_GGCHAT_API_FOR_REQUESTS, AUTH_KEY
 
-from bot.main import logger
+access_token = None
+token_expire_time = 0
 
 
-def ask_ai(question):
+def get_access_token():
+    """
+    Получаем Access token
+    Чтобы иметь возможность отправлять авторизованные запросы к API
+    """
+    global access_token, token_expire_time
+
+    payload = {'scope': 'GIGACHAT_API_PERS'}
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        'RqUID': str(uuid.uuid4()),
+        'Authorization': f'Basic {AUTH_KEY}'
+    }
+
+    try:
+        response = requests.post(URL_ACCESS_TOKEN, headers=headers, data=payload, timeout=10, verify=False
+                                 )
+
+        if response.status_code == 200:
+            data = response.json()
+            access_token = data['access_token']
+            token_expire_time = time.time() + 25 * 60
+            logger.info("Токен GigaChat успешно получен")
+            return True
+        else:
+            logger.error(f"Ошибка получения токена: {response.status_code}, {response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Ошибка при получении токена: {str(e)}")
+        return False
+
+
+def ask_ai(question_message):
     """Отправляем запрос к GigaChat API с использованием токена"""
     global access_token, token_expire_time
 
     if not access_token or time.time() > token_expire_time:
-        if not get_gigachat_token():
-            return "Сервис временно недоступен. Попробуйте позже."
+        if not get_access_token():
+            return "Сервис временно недоступен. Попробуй найти нужную информацию в частых вопросах и/или проанализировав проекты"
 
-    url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+    url = URL_GGCHAT_API_FOR_REQUESTS
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -35,7 +71,7 @@ def ask_ai(question):
         },
         {
             "role": "user",
-            "content": question
+            "content": question_message
         }
     ]
 
@@ -47,6 +83,7 @@ def ask_ai(question):
     }
 
     try:
+        # response = requests.request("GET", url, headers=headers, data=data, verify=False, timeout=15)
         response = requests.post(
             url,
             headers=headers,
@@ -57,7 +94,7 @@ def ask_ai(question):
 
         if response.status_code == 401:
             logger.warning("Токен недействителен. Пробуем обновить...")
-            if get_gigachat_token():
+            if get_access_token():
                 headers['Authorization'] = f'Bearer {access_token}'
                 response = requests.post(
                     url,
@@ -71,6 +108,7 @@ def ask_ai(question):
 
         if response.status_code == 200:
             result = response.json()
+            print(f"Response: {result}")
             return result['choices'][0]['message']['content']
         else:
             logger.error(f"Ошибка API GigaChat: {response.status_code}, {response.text}")
@@ -82,3 +120,6 @@ def ask_ai(question):
     except Exception as e:
         logger.error(f"Ошибка запроса к GigaChat: {str(e)}")
         return None
+
+if __name__ == "__main__":
+    print(ask_ai(question_message="что такое vk education projects"))

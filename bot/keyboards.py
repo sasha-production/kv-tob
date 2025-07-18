@@ -302,7 +302,7 @@ def kb_projects_page(projects: List[Dict[str, Any]],
             make_btn("🏠 Главное меню",
                      cmd="go_home",
                      depth=0,
-                     color=SECONDARY)
+                     color=POSITIVE)
         )
     rows.append(tail)
     return json.dumps({"buttons": rows, "one_time": False}, ensure_ascii=False)
