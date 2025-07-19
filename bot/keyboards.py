@@ -4,12 +4,12 @@
 import json  # превращаем dict -> JSON-строку
 from typing import List, Dict, Any  # подсказки типов
 
-# VK понимает четыре цвета кнопок: primary / secondary / positive / negative
 Color = str  # для короткой записи
 PRIMARY = "primary"
 SECONDARY = "secondary"
 POSITIVE = "positive"
 NEGATIVE = "negative"
+
 
 # Что можно прикрутить - UX-улучшение - Листалки FAQ/проектов сейчас «висят» внизу до конца диалога.
 # При желании добавить
@@ -23,11 +23,6 @@ def _paginate(items: list, page: int, page_size: int):
     page = max(0, min(page, max_page))
     start = page * page_size
     return items[start:start + page_size]
-
-
-# --------------------------------------------------------------------
-# 1. Универсальный конструктор кнопок
-# --------------------------------------------------------------------
 
 
 def make_btn(
@@ -55,16 +50,11 @@ def make_btn(
     }
     if is_link_button:  # для ссылки в кнопке
         button['action']['type'] = "open_link"
-        title, link = label.split('|') # label=f"Cсылка на проект:{proj['link_to_project']}",
+        title, link = label.split('|')  # label=f"Cсылка на проект:{proj['link_to_project']}",
         button['action']['link'] = link
         button['action']['label'] = title
         button.pop('color')
     return button
-
-
-# --------------------------------------------------------------------
-# 2. Обёртка: список рядов -> JSON-клавиатура
-# --------------------------------------------------------------------
 
 
 def make_kb(rows: List[List[Dict[str, Any]]],
@@ -74,7 +64,7 @@ def make_kb(rows: List[List[Dict[str, Any]]],
     которая напрямую передаётся в messages.send(..., keyboard=...)
     """
     kb_dict = {"one_time": one_time, "buttons": rows}  # структура клавиатуры VK
-    return json.dumps(kb_dict, ensure_ascii=False)  # сериализация в строку
+    return json.dumps(kb_dict, ensure_ascii=False)
 
 
 # --------------------------------------------------------------------
@@ -83,12 +73,6 @@ def make_kb(rows: List[List[Dict[str, Any]]],
 
 
 def nav_tail(depth: int) -> List[Dict[str, Any]]:
-    """
-    Возвращает список кнопок навигации в зависимости от глубины.
-    depth = 0  -> []
-    depth = 1  -> [Назад]
-    depth >=2  -> [Назад, Главное меню]
-    """
     buttons: List[Dict[str, Any]] = []
 
     if depth >= 1:
@@ -105,12 +89,7 @@ def nav_tail(depth: int) -> List[Dict[str, Any]]:
                      color=POSITIVE)
         )
 
-    return buttons  # может быть пустой список
-
-
-# --------------------------------------------------------------------
-# 4. Главное меню (корень, depth = 0)
-# --------------------------------------------------------------------
+    return buttons
 
 
 def kb_main_menu() -> str:
@@ -142,11 +121,6 @@ def kb_main_menu() -> str:
     return make_kb(rows)
 
 
-# --------------------------------------------------------------------
-# 5. Меню «Посмотреть проекты» (depth = 1)
-# --------------------------------------------------------------------
-
-
 def kb_find_menu(depth: int = 1) -> str:
     """
     Экран, появляющийся после клика «Посмотреть проекты».
@@ -166,11 +140,6 @@ def kb_find_menu(depth: int = 1) -> str:
     # добавляем хвост навигации («Назад» появится, «Главное меню» — нет)
 
     return make_kb(rows)
-
-
-# ---------------------------------------------------------------------
-# 6. Динамические клавиатуры
-# ---------------------------------------------------------------------
 
 
 def kb_faq_page(faq_list: List[dict],
@@ -257,7 +226,6 @@ def kb_projects_page(projects: List[Dict[str, Any]],
     """
     rows = []
     for p in _paginate(projects, page, page_size):
-        # Кнопка «Подробнее о …»
         rows.append([
             make_btn(
                 label=(p["title"][:36] + "…") if len(p["title"]) > 36 else p["title"],
@@ -307,6 +275,7 @@ def kb_projects_page(projects: List[Dict[str, Any]],
     rows.append(tail)
     return json.dumps({"buttons": rows, "one_time": False}, ensure_ascii=False)
 
+
 def kb_ask_page(depth: int = 1) -> str:
     """
     Клавиатура появляется если пользователь выбрал Задать вопрос
@@ -314,9 +283,7 @@ def kb_ask_page(depth: int = 1) -> str:
     rows: List[List[Dict[str, Any]]] = [nav_tail(depth)]
     return make_kb(rows)
 
-# --------------------------------------------------------------------
-# 7. Экспортируем функции, которые понадобятся снаружи
-# --------------------------------------------------------------------
+
 __all__ = [
     "kb_main_menu",
     "kb_find_menu",

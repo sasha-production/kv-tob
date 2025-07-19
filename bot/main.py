@@ -1,7 +1,7 @@
 # main.py
 import json
 import time
-
+import urllib3
 import vk_api
 from vk_api.bot_longpoll import (
     VkBotLongPoll,
@@ -15,6 +15,7 @@ from bot.bot_logic import generate_keyboard_response
 from bot.bot_data import ERROR_FALLBACK_MESSAGE, BASE_DIR
 from bot.config_logger import logger
 
+# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def run_bot() -> None:
     logger.info("Запуск бота VK Education Projects…")
@@ -33,10 +34,8 @@ def run_bot() -> None:
                     continue
 
                 msg = event.message  # message object
-                user_id = msg.from_id  # user id
-                raw_text = (msg.text or "").strip()  # text
+                user_id, raw_text, payload = msg.from_id, (msg.text or "").strip(), None  # user id, text, payload по умолчанию
 
-                payload = None  # Значение payload по умолчанию
                 if msg.payload:  # Если payload присутствует
                     try:
                         payload = json.loads(msg.payload)

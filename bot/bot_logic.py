@@ -7,36 +7,21 @@ from typing import Tuple, Optional, List, Dict, Any
 from bot.ai_questions import (
     ask_ai
 )
-from bot.keyboards import (
-    kb_main_menu,
-    kb_find_menu,
-    kb_faq_page,
-    kb_directions_menu,
-    kb_durations_menu,
-    kb_projects_page,
-    make_btn,
-    kb_ask_page,
-    SECONDARY,
-    NEGATIVE,
-    PRIMARY,
-    POSITIVE
-)
+from bot.keyboards import (kb_main_menu, kb_find_menu, kb_faq_page, kb_directions_menu, kb_durations_menu,
+                           kb_projects_page, make_btn, kb_ask_page, SECONDARY, NEGATIVE, PRIMARY, POSITIVE
+                           )
 
-from bot.bot_data import (
-    DEFAULT_FALLBACK_MESSAGE,
-    CONTACTS_TEXT,
-    BAD_WORDS_WARNING,
-    contains_bad_words,
-    WELCOME_MESSAGE_AFTER_START
-)
+from bot.bot_data import (DEFAULT_FALLBACK_MESSAGE, CONTACTS_TEXT, BAD_WORDS_WARNING, contains_bad_words,
+                          WELCOME_MESSAGE_AFTER_START
+                          )
 
-# 1. Загрузка данных (проекты + FAQ)
+# Загрузка данных (проекты + FAQ)
 # ---------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parent  # bot/
 DATA_DIR = ROOT.parent / "data"  # …/Data
 
-KB_PATH = DATA_DIR / "project_base.json"
-FAQ_PATH = DATA_DIR / "faq.json"
+KB_PATH = DATA_DIR / "projects.json"
+FAQ_PATH = DATA_DIR / "questions.json"
 
 with KB_PATH.open(encoding="utf-8") as f:
     KB_RAW = json.load(f)
@@ -46,7 +31,7 @@ FILTERS = KB_RAW["available_filters"]
 DIRECTIONS = FILTERS["directions"]
 DURATIONS = FILTERS["durations"]
 
-PAGE_SIZE = 5  # сколько проектов на одну страницу
+PAGE_SIZE = 4  # сколько проектов на одну страницу
 
 with FAQ_PATH.open(encoding="utf-8") as f:
     _faq_list = json.load(f)["available_answered_questions"]
@@ -56,7 +41,7 @@ FAQ_BY_ID: Dict[int, str] = {i: item["answer"] for i, item in enumerate(FAQ_LIST
 
 
 # ---------------------------------------------------------------------
-# 2. Утилиты
+# Утилиты
 # ---------------------------------------------------------------------
 
 
@@ -67,17 +52,10 @@ def normalize(text: str) -> str:
     return re.sub(r"\s{2,}", " ", text).strip()
 
 
-# def match_faq(text: str) -> Optional[str]:
-#     """Ищем точное вхождение вопроса из FAQ"""
-#     lt = normalize(text)
-#     for q, answer in FAQ_BY_ID.items():
-#         if q in lt:
-#             return answer
-#     return None
 
 
 # ---------------------------------------------------------------------
-# 3. Работа с проектами
+# Работа с проектами
 # ---------------------------------------------------------------------
 
 
@@ -314,7 +292,7 @@ def _handle_command(pl: dict) -> Tuple[str, Optional[str]]:
 
         button_project_link = [
             make_btn(
-                label=f"Cсылка на проект|{proj['link_to_project']}",
+                label=f"Подать заявку|{proj['link_to_project']}",
                 depth=depth,
                 # color=SECONDARY,
                 cmd=None,

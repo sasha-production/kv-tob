@@ -1,5 +1,7 @@
 import time
 import uuid
+from pathlib import Path
+
 import requests
 from bot.config_logger import logger
 from bot.config import URL_ACCESS_TOKEN, URL_GGCHAT_API_FOR_REQUESTS, AUTH_KEY
@@ -7,6 +9,8 @@ from bot.config import URL_ACCESS_TOKEN, URL_GGCHAT_API_FOR_REQUESTS, AUTH_KEY
 access_token = None
 token_expire_time = 0
 
+BASE_DIR = Path(__file__).resolve().parent.parent  # корень проекта
+CERT = BASE_DIR / "chain.pem"
 
 def get_access_token():
     """
@@ -24,7 +28,7 @@ def get_access_token():
     }
 
     try:
-        response = requests.post(URL_ACCESS_TOKEN, headers=headers, data=payload, timeout=10, verify=False
+        response = requests.post(URL_ACCESS_TOKEN, headers=headers, data=payload, timeout=10, verify=CERT
                                  )
 
         if response.status_code == 200:
@@ -60,9 +64,9 @@ def ask_ai(question_message):
         {
             "role": "system",
             "content": (
-                "Ты - помощник для ответов пользователей по проектам с сайта VK Education Projects (https://education.vk.company/). Отвечай кратко (1-2 предложения), "
-                "используя только информацию с официального сайта VK Education Projects и VK Education. "
-                "Если вопросы пользователей не относятся к сайту VK Education, анализируй открытые источники из интернета и предложи посетить сайт VK Education Projects"
+                "Ты - помощник для ответов пользователей по вопросам, связанных с сервисом VK Education Projects (https://education.vk.company/education_projects). Отвечай кратко (1-2 предложения), "
+                "используя только информацию с официального сайта VK Education Projects. "
+                "Если вопросы пользователей не относятся к VK Education Projects, анализируй открытые источники из интернета и предложи посетить сайт VK Education Projects"
                 "Будь дружелюбным и полезным. Если вопрос не связан с образовательными проектами VK, "
                 "вежливо предложи посетить официальный сайт VK Education Projects. "
                 "Не упоминай, что ты ИИ-модель. Используй эмодзи для выразительности. "
@@ -79,7 +83,7 @@ def ask_ai(question_message):
         "model": "GigaChat",
         "messages": messages,
         "temperature": 0.7,
-        "max_tokens": 200
+        "max_tokens": 250
     }
 
     try:
@@ -89,7 +93,7 @@ def ask_ai(question_message):
             headers=headers,
             json=data,
             timeout=15,
-            verify=False
+            verify=CERT
         )
 
         if response.status_code == 401:
@@ -101,14 +105,13 @@ def ask_ai(question_message):
                     headers=headers,
                     json=data,
                     timeout=15,
-                    verify=False
+                    verify=CERT
                 )
             else:
                 return "Ошибка авторизации. Попробуйте позже."
 
         if response.status_code == 200:
             result = response.json()
-            print(f"Response: {result}")
             return result['choices'][0]['message']['content']
         else:
             logger.error(f"Ошибка API GigaChat: {response.status_code}, {response.text}")
@@ -122,4 +125,4 @@ def ask_ai(question_message):
         return None
 
 if __name__ == "__main__":
-    print(ask_ai(question_message="что такое vk education projects"))
+    print(ask_ai(question_message="что такое vk education projects и сколько проектов можно выбрать"))
