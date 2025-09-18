@@ -23,13 +23,14 @@ RUN apt-get update \
 
 # Установка зависимостей python без пересборки
 RUN pip install --no-cache --no-cache-dir /wheels/*
-# Not root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-USER appuser
+
 # Копирование кода приложения
-COPY /bot /app/
+COPY . /app/
 
 # Установка рабочей директории
 WORKDIR /app
+
+# Настройка Python path
+#ENV PYTHONPATH=/app
 
 CMD ["python3", "-m", "bot.main"]
